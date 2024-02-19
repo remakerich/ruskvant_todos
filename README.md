@@ -1,16 +1,11 @@
 # ruskvant_todos
 
-A new Flutter project.
+### Создать 2-х страничное приложение по типа TODO на Getx.
 
-## Getting Started
+- 1 страница - список задач (загрузить из https://jsonplaceholder.typicode.com/todos) по клику на элемент открыть вторую страницу с редактирование этого элемента.
+Добавление элемента по кнопке + или добавить(можно разместить где угодно, шапка, плавающая кнопка и тп)
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- 2 страница - добавление и редактирование элемента. На свое усмотрение, чисто редактирование полученного списка без отправки запросов.
+Возможно редактировать название и статус.
+Для загрузки данных использовать пакет Dio, retrofit
+Для моделей использовать freezed.
