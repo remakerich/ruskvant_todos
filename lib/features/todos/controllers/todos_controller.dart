@@ -2,36 +2,35 @@ import 'package:ruskvant_todos/core/core.dart';
 import 'package:ruskvant_todos/features/todos/data/todos_repository.dart';
 import 'package:ruskvant_todos/features/todos/models/todo.dart';
 
-class TodosProvider extends ChangeNotifier {
-  TodosProvider() {
+class TodosController extends GetxController {
+  final _todosRepository = TodosRepository();
+  final todosState = const AsyncState.data().obs;
+  final errorMessage = ''.obs;
+
+  final myTodos = <int, Todo>{}.obs;
+
+  final editedTodoId = 0.obs;
+  final titleController = TextEditingController();
+
+  @override
+  void onInit() {
+    super.onInit();
     fetchTodos();
   }
 
-  final TodosRepository _todosRepository = TodosRepository();
-  AsyncState todosState = const AsyncData();
-  String errorMessage = '';
-
-  Map<int, Todo> myTodos = {};
-
-  int editedTodoId = 0;
-  final titleController = TextEditingController();
-
   Future<void> fetchTodos() async {
-    todosState = const AsyncLoading();
-    notifyListeners();
+    todosState(const AsyncLoading());
 
     final result = await _todosRepository.getTodos();
 
     result.when(
       left: (failure) {
-        todosState = const AsyncError();
-        errorMessage = failure.message;
-        notifyListeners();
+        todosState(const AsyncError());
+        errorMessage(failure.message);
       },
       right: (data) {
-        todosState = const AsyncData();
-        myTodos = data;
-        notifyListeners();
+        todosState(const AsyncData());
+        myTodos(data);
       },
     );
   }
@@ -43,9 +42,10 @@ class TodosProvider extends ChangeNotifier {
       return;
     }
 
+    final updatedTodos = Map<int, Todo>.from(myTodos);
     final updated = todo.copyWith(completed: !todo.completed);
-    myTodos[id] = updated;
-    notifyListeners();
+    updatedTodos[id] = updated;
+    myTodos(updatedTodos);
   }
 
   void createTodo() {
@@ -58,32 +58,35 @@ class TodosProvider extends ChangeNotifier {
       newId = lastId + 1;
     }
 
-    myTodos[newId] = Todo();
-    editedTodoId = newId;
+    final updatedTodos = Map<int, Todo>.from(myTodos);
+
+    updatedTodos[newId] = Todo();
+    myTodos(updatedTodos);
+    editedTodoId(newId);
     titleController.clear();
-    notifyListeners();
   }
 
   void editTodo(int id) {
-    editedTodoId = id;
+    editedTodoId(id);
     titleController.text = myTodos[id]?.title ?? '';
-    notifyListeners();
   }
 
   void changeTitle(String newTitle) {
-    final todo = myTodos[editedTodoId];
+    final todo = myTodos[editedTodoId.value];
 
     if (todo == null) {
       return;
     }
 
+    final updatedTodos = Map<int, Todo>.from(myTodos);
     final updated = todo.copyWith(title: newTitle);
-    myTodos[editedTodoId] = updated;
-    notifyListeners();
+    updatedTodos[editedTodoId.value] = updated;
+    myTodos(updatedTodos);
   }
 
   void deleteTodo() {
-    myTodos.remove(editedTodoId);
-    notifyListeners();
+    final updatedTodos = Map<int, Todo>.from(myTodos);
+    updatedTodos.remove(editedTodoId.value);
+    myTodos(updatedTodos);
   }
 }

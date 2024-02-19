@@ -1,5 +1,5 @@
 import 'package:ruskvant_todos/core/core.dart';
-import 'package:ruskvant_todos/features/todos/providers/todos_provider.dart';
+import 'package:ruskvant_todos/features/todos/controllers/todos_controller.dart';
 import 'package:ruskvant_todos/features/todos/widgets/home_screen.dart';
 
 void main() {
@@ -11,12 +11,17 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => TodosProvider(),
-      child: const MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: HomeScreen(),
-      ),
+    return GetMaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: const HomeScreen(),
+      initialBinding: TodosBinding(),
     );
+  }
+}
+
+class TodosBinding implements Bindings {
+  @override
+  void dependencies() {
+    Get.lazyPut(() => TodosController());
   }
 }

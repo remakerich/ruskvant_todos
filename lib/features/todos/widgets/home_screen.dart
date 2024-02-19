@@ -1,23 +1,25 @@
 import 'package:ruskvant_todos/core/core.dart';
 import 'package:ruskvant_todos/core/extensions/navigator_extension.dart';
-import 'package:ruskvant_todos/features/todos/providers/todos_provider.dart';
+import 'package:ruskvant_todos/features/todos/controllers/todos_controller.dart';
 import 'package:ruskvant_todos/features/todos/widgets/edit_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends GetView<TodosController> {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final isSuccess = context.select<TodosProvider, bool>(
-      (value) => value.todosState is AsyncData,
-    );
+    return Obx(
+      () {
+        final isSuccess = controller.todosState.value is AsyncData;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('My TODOs'),
-      ),
-      floatingActionButton: isSuccess ? const _AddFab() : null,
-      body: const _Body(),
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('My TODOs'),
+          ),
+          floatingActionButton: isSuccess ? const _AddFab() : null,
+          body: const _Body(),
+        );
+      },
     );
   }
 }
@@ -30,7 +32,7 @@ class _AddFab extends StatelessWidget {
     return FloatingActionButton(
       onPressed: () {
         context.navigator.go(const EditScreen());
-        context.read<TodosProvider>().createTodo();
+        Get.find<TodosController>().createTodo();
       },
       child: const Icon(
         Icons.add,
@@ -39,19 +41,21 @@ class _AddFab extends StatelessWidget {
   }
 }
 
-class _Body extends StatelessWidget {
+class _Body extends GetView<TodosController> {
   const _Body();
 
   @override
   Widget build(BuildContext context) {
-    final state = context.select<TodosProvider, AsyncState>(
-      (value) => value.todosState,
-    );
+    return Obx(
+      () {
+        final state = controller.todosState.value;
 
-    return state.when(
-      loading: _LoadingIndicator.new,
-      data: _TodosList.new,
-      error: _ErrorMessage.new,
+        return state.when(
+          loading: _LoadingIndicator.new,
+          data: _TodosList.new,
+          error: _ErrorMessage.new,
+        );
+      },
     );
   }
 }
@@ -67,27 +71,29 @@ class _LoadingIndicator extends StatelessWidget {
   }
 }
 
-class _ErrorMessage extends StatelessWidget {
+class _ErrorMessage extends GetView<TodosController> {
   const _ErrorMessage();
 
   @override
   Widget build(BuildContext context) {
-    final errorMessage = context.select<TodosProvider, String>(
-      (value) => value.errorMessage,
-    );
-
     return Column(
       mainAxisSize: MainAxisSize.max,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(
-          errorMessage,
-          style: const TextStyle(
-            color: Colors.red,
-          ),
+        Obx(
+          () {
+            final errorMessage = controller.errorMessage.value;
+
+            return Text(
+              errorMessage,
+              style: const TextStyle(
+                color: Colors.red,
+              ),
+            );
+          },
         ),
         TextButton(
-          onPressed: context.read<TodosProvider>().fetchTodos,
+          onPressed: controller.fetchTodos,
           child: const Text('Refresh'),
         ),
       ],
@@ -95,26 +101,26 @@ class _ErrorMessage extends StatelessWidget {
   }
 }
 
-class _TodosList extends StatelessWidget {
+class _TodosList extends GetView<TodosController> {
   const _TodosList();
 
   @override
   Widget build(BuildContext context) {
-    final ids = context.select<TodosProvider, List<int>>(
-      (value) => value.myTodos.keys.toList(),
-    );
+    return Obx(() {
+      final ids = controller.myTodos.keys.toList();
 
-    return ListView.separated(
-      itemBuilder: (context, index) => _TodoItem(
-        ids[index],
-      ),
-      itemCount: ids.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 10),
-    );
+      return ListView.separated(
+        itemBuilder: (context, index) => _TodoItem(
+          ids[index],
+        ),
+        itemCount: ids.length,
+        separatorBuilder: (context, index) => const SizedBox(height: 10),
+      );
+    });
   }
 }
 
-class _TodoItem extends StatelessWidget {
+class _TodoItem extends GetView<TodosController> {
   const _TodoItem(
     this.id,
   );
@@ -123,24 +129,21 @@ class _TodoItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final title = context.select<TodosProvider, String>(
-      (value) => value.myTodos[id]?.title ?? '',
-    );
+    return Obx(() {
+      final title = controller.myTodos[id]?.title ?? '';
+      final value = controller.myTodos[id]?.completed ?? false;
 
-    final value = context.select<TodosProvider, bool>(
-      (value) => value.myTodos[id]?.completed ?? false,
-    );
-
-    return ListTile(
-      title: Text(title),
-      onTap: () {
-        context.navigator.go(const EditScreen());
-        context.read<TodosProvider>().editTodo(id);
-      },
-      trailing: Checkbox(
-        onChanged: (_) => context.read<TodosProvider>().toggleStatus(id),
-        value: value,
-      ),
-    );
+      return ListTile(
+        title: Text(title),
+        onTap: () {
+          context.navigator.go(const EditScreen());
+          controller.editTodo(id);
+        },
+        trailing: Checkbox(
+          onChanged: (_) => controller.toggleStatus(id),
+          value: value,
+        ),
+      );
+    });
   }
 }

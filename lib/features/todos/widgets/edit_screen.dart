@@ -1,5 +1,5 @@
 import 'package:ruskvant_todos/core/core.dart';
-import 'package:ruskvant_todos/features/todos/providers/todos_provider.dart';
+import 'package:ruskvant_todos/features/todos/controllers/todos_controller.dart';
 
 class EditScreen extends StatelessWidget {
   const EditScreen({super.key});
@@ -24,7 +24,7 @@ class _DeleteButton extends StatelessWidget {
     return IconButton(
       onPressed: () {
         context.navigator.pop();
-        context.read<TodosProvider>().deleteTodo();
+        Get.find<TodosController>().deleteTodo();
       },
       icon: const Icon(
         Icons.delete,
@@ -43,20 +43,20 @@ class _Body extends StatelessWidget {
       children: const [
         _TitleEditField(),
         _StatusCheckbox(),
-        _DoneButton(),
+        _BackButton(),
       ],
     );
   }
 }
 
-class _DoneButton extends StatelessWidget {
-  const _DoneButton();
+class _BackButton extends StatelessWidget {
+  const _BackButton();
 
   @override
   Widget build(BuildContext context) {
     return TextButton(
       onPressed: context.navigator.pop,
-      child: const Text('Done'),
+      child: const Text('Back'),
     );
   }
 }
@@ -67,34 +67,30 @@ class _TitleEditField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextField(
-      controller: context.read<TodosProvider>().titleController,
-      onChanged: context.read<TodosProvider>().changeTitle,
+      controller: Get.find<TodosController>().titleController,
+      onChanged: Get.find<TodosController>().changeTitle,
     );
   }
 }
 
-class _StatusCheckbox extends StatelessWidget {
+class _StatusCheckbox extends GetView<TodosController> {
   const _StatusCheckbox();
 
   @override
   Widget build(BuildContext context) {
-    final editedId = context.select<TodosProvider, int>(
-      (value) => value.editedTodoId,
-    );
+    return Obx(() {
+      final editedId = controller.editedTodoId.value;
+      final value = controller.myTodos[editedId]?.completed ?? false;
 
-    final value = context.select<TodosProvider, bool>(
-      (value) => value.myTodos[editedId]?.completed ?? false,
-    );
-
-    return Row(
-      children: [
-        Checkbox(
-          onChanged: (_) =>
-              context.read<TodosProvider>().toggleStatus(editedId),
-          value: value,
-        ),
-        const Text('Completed'),
-      ],
-    );
+      return Row(
+        children: [
+          Checkbox(
+            onChanged: (_) => controller.toggleStatus(editedId),
+            value: value,
+          ),
+          const Text('Completed'),
+        ],
+      );
+    });
   }
 }

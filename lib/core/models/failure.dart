@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:ruskvant_todos/core/core.dart';
 
 part 'failure.freezed.dart';

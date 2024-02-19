@@ -8,7 +8,5 @@ export 'package:ruskvant_todos/core/models/async_state.dart';
 
 export 'package:flutter/material.dart';
 export 'package:freezed_annotation/freezed_annotation.dart';
-export 'package:provider/provider.dart';
-export 'package:retrofit/dio.dart';
-export 'package:dio/dio.dart';
 export 'package:flutter/foundation.dart';
+export 'package:get/get.dart';
