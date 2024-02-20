@@ -2,40 +2,22 @@ import 'package:ruskvant_todos/core/core.dart';
 import 'package:ruskvant_todos/core/extensions/navigator_extension.dart';
 import 'package:ruskvant_todos/features/todos/controllers/todos_controller.dart';
 import 'package:ruskvant_todos/features/todos/widgets/edit_screen.dart';
+import 'package:ruskvant_todos/features/todos/widgets/todo_tile.dart';
 
-class HomeScreen extends GetView<TodosController> {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Obx(
-      () {
-        final isSuccess = controller.todosState.value is AsyncData;
-
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text('My TODOs'),
-          ),
-          floatingActionButton: isSuccess ? const _AddFab() : null,
-          body: const _Body(),
-        );
-      },
-    );
-  }
-}
-
-class _AddFab extends StatelessWidget {
-  const _AddFab();
-
-  @override
-  Widget build(BuildContext context) {
-    return FloatingActionButton(
-      onPressed: () {
-        context.navigator.go(const EditScreen());
-        Get.find<TodosController>().createTodo();
-      },
-      child: const Icon(
-        Icons.add,
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('My TODOs'),
+      ),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: const _Body(),
+        ),
       ),
     );
   }
@@ -106,17 +88,26 @@ class _TodosList extends GetView<TodosController> {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() {
-      final ids = controller.myTodos.keys.toList();
+    return Obx(
+      () {
+        final ids = controller.myTodos.keys.toList();
 
-      return ListView.separated(
-        itemBuilder: (context, index) => _TodoItem(
-          ids[index],
-        ),
-        itemCount: ids.length,
-        separatorBuilder: (context, index) => const SizedBox(height: 10),
-      );
-    });
+        return ListView.separated(
+          padding: const EdgeInsets.all(20),
+          itemBuilder: (context, index) {
+            if (index == ids.length) {
+              return const _AddButton();
+            }
+
+            return _TodoItem(
+              ids[index],
+            );
+          },
+          itemCount: ids.length + 1,
+          separatorBuilder: (context, index) => const SizedBox(height: 10),
+        );
+      },
+    );
   }
 }
 
@@ -129,21 +120,39 @@ class _TodoItem extends GetView<TodosController> {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() {
-      final title = controller.myTodos[id]?.title ?? '';
-      final value = controller.myTodos[id]?.completed ?? false;
+    return Obx(
+      () {
+        final title = controller.myTodos[id]?.title ?? '';
+        final value = controller.myTodos[id]?.completed ?? false;
 
-      return ListTile(
-        title: Text(title),
-        onTap: () {
-          context.navigator.go(const EditScreen());
-          controller.editTodo(id);
-        },
-        trailing: Checkbox(
-          onChanged: (_) => controller.toggleStatus(id),
+        return TodoTile(
+          title: title,
           value: value,
-        ),
-      );
-    });
+          onTap: () {
+            context.navigator.go(const EditScreen());
+            controller.editTodo(id);
+          },
+          onToggle: () {
+            controller.toggleStatus(id);
+          },
+        );
+      },
+    );
+  }
+}
+
+class _AddButton extends StatelessWidget {
+  const _AddButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomTextButton(
+      onTap: () {
+        context.navigator.go(const EditScreen());
+        Get.find<TodosController>().createTodo();
+      },
+      text: 'Add todo',
+      icon: Icons.add,
+    );
   }
 }

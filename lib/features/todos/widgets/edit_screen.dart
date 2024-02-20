@@ -8,10 +8,15 @@ class EditScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('TODO'),
-        actions: const [_DeleteButton()],
+        title: const Text('Edit TODO'),
+        automaticallyImplyLeading: false,
       ),
-      body: const _Body(),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: const _Body(),
+        ),
+      ),
     );
   }
 }
@@ -21,15 +26,14 @@ class _DeleteButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-      onPressed: () {
+    return CustomTextButton(
+      onTap: () {
         context.navigator.pop();
         Get.find<TodosController>().deleteTodo();
       },
-      icon: const Icon(
-        Icons.delete,
-        color: Colors.red,
-      ),
+      text: 'Delete',
+      icon: Icons.delete,
+      color: Colors.red,
     );
   }
 }
@@ -40,9 +44,11 @@ class _Body extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
+      padding: const EdgeInsets.all(20),
       children: const [
         _TitleEditField(),
         _StatusCheckbox(),
+        _DeleteButton(),
         _BackButton(),
       ],
     );
@@ -54,9 +60,10 @@ class _BackButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextButton(
-      onPressed: context.navigator.pop,
-      child: const Text('Back'),
+    return CustomTextButton(
+      onTap: context.navigator.pop,
+      text: 'Back',
+      icon: Icons.chevron_left,
     );
   }
 }
@@ -66,9 +73,21 @@ class _TitleEditField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      controller: Get.find<TodosController>().titleController,
-      onChanged: Get.find<TodosController>().changeTitle,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      child: TextField(
+        decoration: const InputDecoration(
+          border: OutlineInputBorder(
+            borderSide: BorderSide(),
+            borderRadius: BorderRadius.all(
+              Radius.circular(15),
+            ),
+          ),
+          hintText: 'Enter todo text',
+        ),
+        controller: Get.find<TodosController>().titleController,
+        onChanged: Get.find<TodosController>().changeTitle,
+      ),
     );
   }
 }
@@ -78,19 +97,36 @@ class _StatusCheckbox extends GetView<TodosController> {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() {
-      final editedId = controller.editedTodoId.value;
-      final value = controller.myTodos[editedId]?.completed ?? false;
+    return Obx(
+      () {
+        final editedId = controller.editedTodoId.value;
+        final value = controller.myTodos[editedId]?.completed ?? false;
 
-      return Row(
-        children: [
-          Checkbox(
-            onChanged: (_) => controller.toggleStatus(editedId),
-            value: value,
+        return Material(
+          elevation: 10,
+          borderRadius: BorderRadius.circular(15),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(15),
+            onTap: () => controller.toggleStatus(editedId),
+            child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Row(
+                children: [
+                  Checkbox(
+                    onChanged: (_) => controller.toggleStatus(editedId),
+                    value: value,
+                  ),
+                  const SizedBox(width: 10),
+                  const Text(
+                    'Completed',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ],
+              ),
+            ),
           ),
-          const Text('Completed'),
-        ],
-      );
-    });
+        );
+      },
+    );
   }
 }
