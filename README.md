@@ -9,3 +9,17 @@
 Возможно редактировать название и статус.
 Для загрузки данных использовать пакет Dio, retrofit
 Для моделей использовать freezed.
+
+### Выполнение
+
+- Приложение: https://remakerich.github.io/ruskvant_todos/
+
+Для локального запуска:
+- `
+dart pub global activate derry
+`
+- `
+derry rebuild
+`
+
+P.S. GetX использовал впервые.
